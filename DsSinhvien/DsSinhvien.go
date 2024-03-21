@@ -1,15 +1,3 @@
-/*
-Quản lý sinh viên:
-
-Tạo struct SinhVien với các thuộc tính: tên, mã sinh viên, điểm các môn học.
-Tạo method TinhDiemTrungBinh để tính điểm trung bình của sinh viên.
-Tạo method InThongTin để in ra thông tin của sinh viên.
-Tạo slice DanhSachSinhVien để lưu trữ danh sách sinh viên.
-Viết code để thêm, sửa, xóa sinh viên khỏi danh sách.
-Viết code để tìm kiếm sinh viên theo tên hoặc mã sinh viên.
-Viết code để sắp xếp sinh viên theo điểm trung bình.
-*/
-
 package main
 
 import (
@@ -17,14 +5,20 @@ import (
 )
 
 type Student struct {
-	name      string
-	mssv      string
-	math      float32
-	physics   float32
-	chemistry float32
+	name         string
+	mssv         string
+	math         float32
+	physics      float32
+	chemistry    float32
+	averagePoint float32
 }
 
-func (s *Student) add() {
+func (s *Student) calculateAveragePoint() {
+	//Math coefficient 2, physical coefficient 1, chemical coefficient 1
+	s.averagePoint = (s.math*2 + s.physics + s.chemistry) / 4
+}
+
+func (s *Student) addStudent() {
 	fmt.Println("Add student information!")
 	fmt.Print("Name: ")
 	fmt.Scan(&s.name)
@@ -36,40 +30,126 @@ func (s *Student) add() {
 	fmt.Scan(&s.physics)
 	fmt.Print("Chemistry point= ")
 	fmt.Scan(&s.chemistry)
+	s.calculateAveragePoint()
+	fmt.Println("Add student information done!")
 
 }
 
-func (s *Student) printInfor() {
-	///Information student
-	fmt.Println("____________________________")
-	fmt.Println("Name: ", s.name)
-	fmt.Println("Name: ", s.mssv)
-	fmt.Println("math: ", s.math)
-	fmt.Println("physics: ", s.physics)
-	fmt.Println("Chemistry: ", s.chemistry)
+func (s *Student) printInformation() {
+	fmt.Printf("| %s | %s | %v | %v | %v | %v | \n", s.name, s.mssv, s.math, s.physics, s.chemistry, s.averagePoint)
 }
 
-func (s *Student) calculateAverageScore() {
-	//Student's average score
-	//Math coefficient 2, physical coefficient 1, chemical coefficient 1
-	fmt.Println("Avg: ", (s.math*2+s.physics+s.chemistry)/4)
+func (s *Student) modifyStudent() {
+	fmt.Printf("Modify %v information!\n", s.name)
+	fmt.Print("Name: ")
+	fmt.Scan(&s.name)
+	fmt.Print("Math point= ")
+	fmt.Scan(&s.math)
+	fmt.Print("Physics point= ")
+	fmt.Scan(&s.physics)
+	fmt.Print("Chemistry point= ")
+	fmt.Scan(&s.chemistry)
+	s.calculateAveragePoint()
+	fmt.Println("Modify done!")
 }
 
-type Students []Student
+type Classroom []Student
 
 func main() {
-	var students Students
-	// Add students
-	for i := 0; i < 3; i++ {
-		var st Student
-		st.add()
-		students = append(students, st)
-	}
-	for i := 0; i < 3; i++ {
-		students[i].printInfor()
-		students[i].calculateAverageScore()
+	var class Classroom
+
+	fmt.Println("______________________________________________")
+	fmt.Println("Please select the corresponding character!")
+	fmt.Println("Add students: add")
+	fmt.Println("Modify students: modify")
+	fmt.Println("Delete students: delete")
+	fmt.Println("Find average score students: findavg")
+	fmt.Println("Students have max average score: maxavg")
+	fmt.Println("Print all student information: printall")
+	fmt.Println("Exit: exit")
+	fmt.Println("_______________________________________________")
+	for {
+		var char, ms string
+		var maxavg float32
+
+		fmt.Println("")
+		fmt.Print("I want ")
+		fmt.Scan(&char)
+
+		if char == "add" {
+			var student Student
+			student.addStudent()
+			class = append(class, student)
+		} else if char == "modify" {
+			fmt.Print("Modify student whose mssv is: ")
+			fmt.Scanln(&ms)
+			found := false
+			for _, st := range class {
+				if st.mssv == ms {
+					st.modifyStudent()
+					found = true
+					break
+				}
+			}
+			if !found{
+				fmt.Println("Not found!")
+			}
+		} else if char == "delete" {
+			fmt.Print("Delete students whose mssv is: ")
+			fmt.Scanln(&ms)
+			found := false
+			for index, st := range class {
+				if st.mssv == ms {
+					fmt.Println("Delete done!")
+					class = append(class[:index], class[index+1:]...)
+					found = true
+					break
+				}
+			}
+			if !found{
+				fmt.Println("Not found!")
+			}
+		} else if char == "findavg" {
+			fmt.Print("Average score student whose mssv is: ")
+			fmt.Scanln(&ms)
+			found := false
+			for _, st := range class {
+				if st.mssv == ms {
+					fmt.Printf("%s have an average score of %v ", st.name, st.averagePoint)
+					found = true
+					break
+				}
+			}
+			if !found{
+				fmt.Println("Not found!")
+			}
+		} else if char == "maxavg" {
+			maxavg = 0
+			nameAvgMax := "  "
+			for _, st := range class {
+				if st.averagePoint > maxavg {
+					maxavg = st.averagePoint
+					nameAvgMax = st.name
+				}
+			}
+			fmt.Printf("%s have the highest average score of %v \n", nameAvgMax, maxavg)
+			continue
+		} else if char == "exit" {
+			fmt.Println("Goodbye!")
+			break
+		} else if char == "printall" {
+			fmt.Println("    Information all students!   ")
+			fmt.Println("__________________________________")
+			for _, st := range class {
+				st.printInformation()
+			}
+			if len(class) == 0 {
+				fmt.Println("Nil!")
+			}
+			fmt.Println("__________________________________")
+		} else {
+			fmt.Println("Invalid character!")
+		}
 	}
 
-	fmt.Println("Print student list")
-	fmt.Println(students)
 }
