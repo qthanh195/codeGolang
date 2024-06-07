@@ -5,151 +5,184 @@ import (
 )
 
 type Student struct {
-	name         string
-	mssv         string
-	math         float32
-	physics      float32
-	chemistry    float32
-	averagePoint float32
+	Name           string
+	Mssv           int
+	MathScore      float32
+	PhysicsScore   float32
+	ChemistryScore float32
 }
 
-func (s *Student) calculateAveragePoint() {
-	//Math coefficient 2, physical coefficient 1, chemical coefficient 1
-	s.averagePoint = (s.math*2 + s.physics + s.chemistry) / 4
-}
-
-func (s *Student) addStudent() {
-	fmt.Println("Add student information!")
-	fmt.Print("Name: ")
-	fmt.Scan(&s.name)
-	fmt.Print("Mssv: ")
-	fmt.Scan(&s.mssv)
-	fmt.Print("Math point= ")
-	fmt.Scan(&s.math)
-	fmt.Print("Physics point= ")
-	fmt.Scan(&s.physics)
-	fmt.Print("Chemistry point= ")
-	fmt.Scan(&s.chemistry)
-	s.calculateAveragePoint()
-	fmt.Println("Add student information done!")
-
+// điểm trung bình của sinh viên
+func (s *Student) CalcAvgScore() float32 {
+	return (s.MathScore*2 + s.PhysicsScore + s.ChemistryScore) / 4
 }
 
 func (s *Student) printInformation() {
-	fmt.Printf("| %s | %s | %v | %v | %v | %v | \n", s.name, s.mssv, s.math, s.physics, s.chemistry, s.averagePoint)
+	fmt.Printf("| %v | %v | %v | %v | %v |\n", s.Name, s.Mssv, s.MathScore, s.PhysicsScore, s.ChemistryScore)
 }
 
-func (s *Student) modifyStudent() {
-	fmt.Printf("Modify %v information!\n", s.name)
-	fmt.Print("Name: ")
-	fmt.Scan(&s.name)
-	fmt.Print("Math point= ")
-	fmt.Scan(&s.math)
-	fmt.Print("Physics point= ")
-	fmt.Scan(&s.physics)
-	fmt.Print("Chemistry point= ")
-	fmt.Scan(&s.chemistry)
-	s.calculateAveragePoint()
-	fmt.Println("Modify done!")
+type Classroom struct {
+	students []*Student
 }
 
-type Classroom []Student
+func (p *Classroom) AddStudent(student *Student) {
+	p.students = append(p.students, student)
+}
 
-func main() {
-	var class Classroom
-
-	fmt.Println("______________________________________________")
-	fmt.Println("Please select the corresponding character!")
-	fmt.Println("Add students: add")
-	fmt.Println("Modify students: modify")
-	fmt.Println("Delete students: delete")
-	fmt.Println("Find average score students: findavg")
-	fmt.Println("Students have max average score: maxavg")
-	fmt.Println("Print all student information: printall")
-	fmt.Println("Exit: exit")
-	fmt.Println("_______________________________________________")
-	for {
-		var char, ms string
-		var maxavg float32
-
-		fmt.Println("")
-		fmt.Print("I want ")
-		fmt.Scan(&char)
-
-		if char == "add" {
-			var student Student
-			student.addStudent()
-			class = append(class, student)
-		} else if char == "modify" {
-			fmt.Print("Modify student whose mssv is: ")
-			fmt.Scanln(&ms)
-			found := false
-			for _, st := range class {
-				if st.mssv == ms {
-					st.modifyStudent()
-					found = true
-					break
-				}
-			}
-			if !found{
-				fmt.Println("Not found!")
-			}
-		} else if char == "delete" {
-			fmt.Print("Delete students whose mssv is: ")
-			fmt.Scanln(&ms)
-			found := false
-			for index, st := range class {
-				if st.mssv == ms {
-					fmt.Println("Delete done!")
-					class = append(class[:index], class[index+1:]...)
-					found = true
-					break
-				}
-			}
-			if !found{
-				fmt.Println("Not found!")
-			}
-		} else if char == "findavg" {
-			fmt.Print("Average score student whose mssv is: ")
-			fmt.Scanln(&ms)
-			found := false
-			for _, st := range class {
-				if st.mssv == ms {
-					fmt.Printf("%s have an average score of %v ", st.name, st.averagePoint)
-					found = true
-					break
-				}
-			}
-			if !found{
-				fmt.Println("Not found!")
-			}
-		} else if char == "maxavg" {
-			maxavg = 0
-			nameAvgMax := "  "
-			for _, st := range class {
-				if st.averagePoint > maxavg {
-					maxavg = st.averagePoint
-					nameAvgMax = st.name
-				}
-			}
-			fmt.Printf("%s have the highest average score of %v \n", nameAvgMax, maxavg)
-			continue
-		} else if char == "exit" {
-			fmt.Println("Goodbye!")
-			break
-		} else if char == "printall" {
-			fmt.Println("    Information all students!   ")
-			fmt.Println("__________________________________")
-			for _, st := range class {
-				st.printInformation()
-			}
-			if len(class) == 0 {
-				fmt.Println("Nil!")
-			}
-			fmt.Println("__________________________________")
-		} else {
-			fmt.Println("Invalid character!")
+func (p *Classroom) EditStudent(name string, mssv int, mathScore float32, physicsScore float32, chemistryScore float32) {
+	for _, st := range p.students {
+		if st.Mssv == mssv {
+			st.Name = name
+			st.MathScore = mathScore
+			st.PhysicsScore = physicsScore
+			st.ChemistryScore = chemistryScore
+			fmt.Println("Student information updated.")
+			return
 		}
 	}
+	fmt.Println("Student not found.")
+}
 
+func (p *Classroom) DeleteStudent(mssv int) {
+	for index, st := range p.students {
+		if st.Mssv == mssv {
+			p.students = append(p.students[:index], p.students[index+1:]...)
+			fmt.Println("Student deleted.")
+			return
+		}
+	}
+	fmt.Println("Student not found.")
+}
+
+func (p *Classroom) FindStudent(mssv int) *Student {
+	for _, st := range p.students {
+		if st.Mssv == mssv {
+			st.printInformation()
+			return st
+		}
+	}
+	fmt.Println("Student not found.")
+	return nil
+}
+
+func (p *Classroom) FindStudentMaxAvgScore() {
+	if len(p.students) == 0 {
+		fmt.Println("No students in the classroom.")
+		return
+	}
+
+	max := p.students[0].CalcAvgScore()
+	index := 0
+	for i, st := range p.students {
+		if avg := st.CalcAvgScore(); avg > max {
+			max = avg
+			index = i
+		}
+	}
+	fmt.Printf("Average score: %v\n", max)
+	p.students[index].printInformation()
+}
+
+func NewStudent(name string, mssv int, mathScore float32, physicsScore float32, chemistryScore float32) *Student {
+	return &Student{
+		Name:           name,
+		Mssv:           mssv,
+		MathScore:      mathScore,
+		PhysicsScore:   physicsScore,
+		ChemistryScore: chemistryScore,
+	}
+}
+func main() {
+	var number int
+	classroom := new(Classroom)
+	fmt.Println("______________________________________________")
+	fmt.Println("Enter the number!")
+	fmt.Println("1. Add students")
+	fmt.Println("2. Edit information")
+	fmt.Println("3. Delete students")
+	fmt.Println("4. Find students by MSSV")
+	fmt.Println("5. Students have max average score")
+	fmt.Println("6. Exit")
+	fmt.Println("_______________________________________________")
+
+	for {
+		fmt.Print("Number: ")
+		_, err := fmt.Scan(&number)
+		if err != nil || number > 6 || number < 1 {
+			fmt.Println("Invalid value.")
+			continue
+		}
+
+		switch number {
+		case 1:
+			fmt.Println("Add student.")
+			var name string
+			var mssv int
+			var mathScore, physicsScore, chemistryScore float32
+
+			fmt.Print("Name: ")
+			fmt.Scan(&name)
+
+			fmt.Print("Mssv: ")
+			fmt.Scan(&mssv)
+
+			fmt.Print("Math Score: ")
+			fmt.Scan(&mathScore)
+
+			fmt.Print("Physics Score: ")
+			fmt.Scan(&physicsScore)
+
+			fmt.Print("Chemistry Score: ")
+			fmt.Scan(&chemistryScore)
+
+			student := NewStudent(name, mssv, mathScore, physicsScore, chemistryScore)
+			classroom.AddStudent(student)
+		case 2:
+			fmt.Println("Edit information")
+			var name string
+			var mssv int
+			var mathScore, physicsScore, chemistryScore float32
+
+			fmt.Print("Mssv: ")
+			fmt.Scan(&mssv)
+
+			fmt.Print("Name: ")
+			fmt.Scan(&name)
+
+			fmt.Print("Math Score: ")
+			fmt.Scan(&mathScore)
+
+			fmt.Print("Physics Score: ")
+			fmt.Scan(&physicsScore)
+
+			fmt.Print("Chemistry Score: ")
+			fmt.Scan(&chemistryScore)
+
+			classroom.EditStudent(name, mssv, mathScore, physicsScore, chemistryScore)
+		case 3:
+			fmt.Println("Delete student.")
+			var mssv int
+
+			fmt.Print("Mssv: ")
+			fmt.Scan(&mssv)
+
+			classroom.DeleteStudent(mssv)
+		case 4:
+			fmt.Println("Find student by MSSV.")
+			var mssv int
+
+			fmt.Print("Mssv: ")
+			fmt.Scan(&mssv)
+
+			classroom.FindStudent(mssv)
+		case 5:
+			fmt.Println("Student with max average score.")
+			classroom.FindStudentMaxAvgScore()
+		case 6:
+			fmt.Println("Exit")
+			return
+
+		}
+
+	}
 }
